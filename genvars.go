@@ -1,9 +1,6 @@
 package genvars
 
-import (
-	"errors"
-	"os"
-)
+import "os"
 
 //const
 
@@ -18,6 +15,8 @@ type EnvManager struct {
 	devTagVal string
 	// Value to indicate production mode
 	prodTagVal string
+	// Value to indicate test mode
+	testTagVal string
 }
 
 type ManagerOptions struct {
@@ -27,16 +26,18 @@ type ManagerOptions struct {
 	DevTagValue string
 	// Value to indicate production mode
 	ProdTagValue string
+	// Value to indicate test mode
 }
 
 // Create a new app enviroment manager
 // Optional ManagerOptions struct
-func NewManager(appName string, opts ...ManagerOptions) (*EnvManager, error) {
+func NewManager(appName string, opts ...ManagerOptions) *EnvManager {
 	m := &EnvManager{
 		prefix:     appName,
 		envVar:     "APP_ENV",
-		devTagVal:  "DEVELOPMENT",
-		prodTagVal: "PRODUCTION",
+		devTagVal:  "development",
+		prodTagVal: "production",
+		testTagVal: "test",
 	}
 
 	// Apply the given options
@@ -59,10 +60,10 @@ func NewManager(appName string, opts ...ManagerOptions) (*EnvManager, error) {
 	} else if env == m.prodTagVal {
 		m.currEnv = m.prodTagVal
 	} else {
-		return nil, errors.New("Invalid value for Enviroment tag")
+		m.currEnv = env
 	}
 
-	return m, nil
+	return m
 }
 
 func (self *EnvManager) Getenv(name string) string {
@@ -79,6 +80,14 @@ func (self *EnvManager) IsProduction() bool {
 
 func (self *EnvManager) IsDevelopment() bool {
 	return self.currEnv == self.devTagVal
+}
+
+func (self *EnvManager) IsTest() bool {
+	return self.currEnv == self.testTagVal
+}
+
+func (self *EnvManager) Env() string {
+	return self.currEnv
 }
 
 func applyIfNotNull(value *string, opt string) {
